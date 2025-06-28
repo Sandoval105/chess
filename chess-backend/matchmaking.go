@@ -22,11 +22,19 @@ var upgrader = websocket.Upgrader{
 }
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
-	nickname := r.URL.Query().Get("nickname")
-	if nickname == "" {
-		http.Error(w, "nickname obrigatorio! ", http.StatusBadRequest)
-		return
 
+	tokenString := r.URL.Query().Get("token")
+
+	if tokenString == "" {
+		http.Error(w, "token ausente", http.StatusUnauthorized)
+		return
+	}
+
+	nickname, err := verificarToken(tokenString)
+
+	if err != nil {
+		http.Error(w, "token invalido, login invalido", http.StatusUnauthorized)
+		return
 	}
 
 	conn, err := upgrader.Upgrade(w, r, nil)

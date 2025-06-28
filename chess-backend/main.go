@@ -11,6 +11,8 @@ func main() {
 
 	//endpoints
 
+	http.Handle("/", http.FileServer(http.Dir("../frontend/public")))
+
 	http.HandleFunc("/register", registerHandler)
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/ws", wsHandler)

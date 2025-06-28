@@ -17,7 +17,6 @@ type Game struct {
 }
 
 func startGame(p1, p2 *Player) {
-
 	game := &Game{
 		Player1: p1,
 		Player2: p2,
@@ -80,7 +79,6 @@ func (g *Game) runTimer() {
 //enviar tempo atualizado para os dois jogadores
 
 func (g *Game) sendTimeUpdate() {
-
 	g.Player1.Conn.WriteJSON(map[string]interface{}{
 		"type":  "time",
 		"your":  g.Timep1,
@@ -97,7 +95,6 @@ func (g *Game) sendTimeUpdate() {
 
 func (g *Game) listenMoves(p *Player, id string) {
 	for {
-
 		var msg map[string]string
 		err := p.Conn.ReadJSON(&msg)
 		if err != nil {
@@ -139,7 +136,6 @@ func (g *Game) listenMoves(p *Player, id string) {
 			return
 
 		}
-
 	}
 }
 

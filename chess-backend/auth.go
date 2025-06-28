@@ -2,10 +2,60 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+var jwtSecret = []byte("harryp_istiv")
+
+func verificarToken(r string) (string, error) {
+	tokenHeader := r
+
+	if tokenHeader == "" {
+		return "", errors.New("token ausente")
+	}
+
+	token, err := jwt.Parse(tokenHeader, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("algoritmo inválido")
+		}
+		return jwtSecret, nil
+
+	})
+
+	if err != nil || !token.Valid {
+		return "", errors.New("token invalido")
+
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", errors.New("erro nas claims")
+	}
+
+	nickname, ok := claims["nickname"].(string)
+	if !ok {
+		return "", errors.New("nickname ausente")
+	}
+
+	return nickname, nil
+
+}
+
+func gerarToken(nickname string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"nickname": nickname,
+		"exp":      time.Now().Add((time.Hour * 24)).Unix(),
+	})
+
+	return token.SignedString(jwtSecret)
+
+}
 
 type User struct {
 	Nickname string `json:"nickname"`
@@ -37,13 +87,10 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("cadastro concluido com sucesso!"))
-
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-
 	var u User
-
 	err := json.NewDecoder(r.Body).Decode(&u)
 
 	defer r.Body.Close()
@@ -66,6 +113,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("login com sucesso! "))
+	// Aqui geramos um "token" simples
+	token, err := gerarToken(u.Nickname)
+	if err != nil {
+		http.Error(w, "erro ao gerar token ", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"token":    token,
+		"nickname": u.Nickname,
+	})
 
 }
