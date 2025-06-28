@@ -3,13 +3,10 @@ let board ;
 const game = new Chess()
 
 const nickname = localStorage.getItem("nickname");
-const ws = new WebSocket("ws://localhost:8080/ws?nickname=" + nickname);
+const token = localStorage.getItem("token");
+const ws = new WebSocket(`ws://localhost:8080/ws?nickname=${nickname}&token=${token}`);
 
 let color = "white";
-
-
-
-
 
 const customPieceMap = {
     'wP': 'Bpeao.svg',
@@ -26,10 +23,6 @@ const customPieceMap = {
     'bK': 'Prei.svg',
 };
 
-
-
-
-
 function updateStatus(){
     let status = "";
 
@@ -45,10 +38,7 @@ function updateStatus(){
     }
 
     document.getElementById("status").innerText = status;
-
 }
-
-
 
 ws.onmessage = (msg) => {
     try {
@@ -67,17 +57,13 @@ ws.onmessage = (msg) => {
                 orientation: color
             });
             
-
             updateStatus();
-
             return
         }
          
         if (data.type == "time"){
-
             console.log("seu time: ", data.your);
             console.log("oponente time: ",data.enemy)
-
             return
         }
 
@@ -95,22 +81,16 @@ ws.onmessage = (msg) => {
 }
 
 
-
-
 function onDrop(source, target) {
-
     if (game.turn() !== color[0]) return 'snapback';
     const move = game.move({
         from: source,
         to: target,
         promotion: "q"
     });
-
     if (move == null)  return 'snapback';
     
-
-
-   updateStatus()
+    updateStatus()
 
    ///enviar jogadas pro oponente 
 
