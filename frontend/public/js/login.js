@@ -26,7 +26,7 @@ async function logar() {
     localStorage.setItem("token", data.token);
     localStorage.setItem("nickname", data.nickname);
 
-    window.location.href = "/game.html"
+    window.location.href = "/lobby.html"
 
 
 
